@@ -17,3 +17,5 @@ An Express.js-based back-end server for managing after-school classes and activi
 - Modified server.js to implement mongodb connection & display data from database's collections
 # Commit 5 - REST Api PUSH implemented for adding data in databases's collection
 - Modified server.js to implement REST Api PUSH method. Data can now be added to database collection.
+# Commit 6 - REST Api PUT implemented for updating data in databases's collection
+- Modified server.js to implement REST Api PUT method. Data update now possible.
