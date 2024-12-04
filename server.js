@@ -27,6 +27,38 @@ function logger(req, res, next) {
 // Use the logger middleware
 app.use(logger);
 
+// MongoDB connection string and database setup
+let db;
+
+MongoClient.connect('mongodb+srv://blockstree:Rars1234@cst3144.zixj3.mongodb.net/', { useNewUrlParser: true, useUnifiedTopology: true }, (e, client) => {
+    if (e) {
+        console.error('Failed to connect to MongoDB', e);
+        process.exit(1); // Exit if the connection fails
+    }
+    db = client.db('webstore'); // Database name
+    console.log('Connected to MongoDB');
+});
+
+// Basic route
+app.get('/', (req, res) => {
+    res.send('API is running! Try /collection/lessons');
+});
+
+// get the collection name
+app.param('collectionName', (req, res, next, collectionName) => {
+    req.collection = db.collection(collectionName)
+    console.log('collection name:', req.collection)
+    return next()
+})
+
+// Get all lessons from the "lessons" collection
+app.get('/collection/:collectionName', (req, res) => {
+    req.collection.find({}).toArray((e, results) => {
+		if (e) return next(e);
+		res.send(results);
+	});
+});
+
 // Start server
 app.listen(3000, () => {
     console.log('Server running at http://localhost:3000');
