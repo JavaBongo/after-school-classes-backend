@@ -1,10 +1,24 @@
 // Import dependencies
 const express = require('express');
 const MongoClient = require('mongodb').MongoClient;
+var path = require("path");
+
+function config(req, res, next) {
+	res.setHeader("Access-Control-Allow-Origin", "*");
+	res.setHeader("Access-Control-Allow-Credentials", "true");
+	res.setHeader("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
+	res.setHeader(
+		"Access-Control-Allow-Headers",
+		"Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers"
+	);
+
+	next();
+}
 
 // Create Express instance
 const app = express();
 app.use(express.json()); // Middleware to parse JSON
+app.use(config);
 
 // Logger Middleware
 function logger(req, res, next) {
@@ -26,6 +40,12 @@ function logger(req, res, next) {
 
 // Use the logger middleware
 app.use(logger);
+
+var imagePath = path.resolve(__dirname, "assets");
+app.use('/assets', express.static(imagePath));
+app.get('/assets/:image', function(request, response, next) {
+    response.status(404).send('Image not found');
+});
 
 // MongoDB connection string and database setup
 let db;
@@ -53,11 +73,14 @@ app.param('collectionName', (req, res, next, collectionName) => {
 })
 
 // Get all lessons from the "lessons" collection
-app.get('/collection/:collectionName', (req, res) => {
-    req.collection.find({}).toArray((e, results) => {
-		if (e) return next(e);
-		res.send(results);
-	});
+app.get('/collection/lessons', (req, res) => {
+    db.collection('lessons').find({}).toArray((e, lessons) => {
+        if (e) {
+            res.status(500).send(e);
+            return;
+        }
+        res.json(lessons);
+    });
 });
 
 // Post new order data into "orders" collection

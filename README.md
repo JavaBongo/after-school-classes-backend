@@ -6,16 +6,20 @@ An Express.js-based back-end server for managing after-school classes and activi
 - Render Service: 
 - Github Pages: https://javabongo.github.io/after-school-classes-vue/
 # Commit 1 - Initialize Express basic app
-- Added package.json with express dependency
-- Added server.js with basic express app setup
-- Added .gitignore for node_modules/
+- Added package.json with express dependency.
+- Added server.js with basic express app setup.
+- Added .gitignore for node_modules/.
 # Commit 2 - Setup simple GET request
-- Modified server.js to implement simple get request and display information using .json format
+- Modified server.js to implement simple get request and display information using .json format.
 # Commit 3 - Logger Middleware implemented
 - Modified server.js to implement logger middleware. Type of requests & response status will be displayed in the server console.
 # Commit 4 - Mongodb connection and displaying data using GET
-- Modified server.js to implement mongodb connection & display data from database's collections
+- Modified server.js to implement mongodb connection & display data from database's collections.
 # Commit 5 - REST Api PUSH implemented for adding data in databases's collection
 - Modified server.js to implement REST Api PUSH method. Data can now be added to database collection.
 # Commit 6 - REST Api PUT implemented for updating data in databases's collection
 - Modified server.js to implement REST Api PUT method. Data update now possible.
+# Commit 7 - Static files for images in assets folder implemented
+- Modified .gitignore to ignore .DS_Store
+- Added Assets folder with 15 image items.
+- Updated server.js to implement static rendering of images in assets folder,
