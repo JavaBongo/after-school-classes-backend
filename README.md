@@ -13,5 +13,7 @@ An Express.js-based back-end server for managing after-school classes and activi
 - Modified server.js to implement simple get request and display information using .json format
 # Commit 3 - Logger Middleware implemented
 - Modified server.js to implement logger middleware. Type of requests & response status will be displayed in the server console.
-# Commit 4 - Mongodb connection and displaying data
+# Commit 4 - Mongodb connection and displaying data using GET
 - Modified server.js to implement mongodb connection & display data from database's collections
+# Commit 5 - REST Api PUSH implemented for adding data in databases's collection
+- Modified server.js to implement REST Api PUSH method. Data can now be added to database collection.

@@ -29,8 +29,9 @@ app.use(logger);
 
 // MongoDB connection string and database setup
 let db;
+let MongoURI = 'mongodb+srv://blockstree:Rars1234@cst3144.zixj3.mongodb.net/'
 
-MongoClient.connect('mongodb+srv://blockstree:Rars1234@cst3144.zixj3.mongodb.net/', { useNewUrlParser: true, useUnifiedTopology: true }, (e, client) => {
+MongoClient.connect(MongoURI, { useNewUrlParser: true, useUnifiedTopology: true }, (e, client) => {
     if (e) {
         console.error('Failed to connect to MongoDB', e);
         process.exit(1); // Exit if the connection fails
@@ -58,6 +59,14 @@ app.get('/collection/:collectionName', (req, res) => {
 		res.send(results);
 	});
 });
+
+// Post new order data into "orders" collection
+app.post('/collection/:collectionName', (req, res, next) => {
+    req.collection.insert(req.body, (e, results) => {
+        if (e) return next(e)
+        res.send(results.ops)
+    })
+})
 
 // Start server
 app.listen(3000, () => {
