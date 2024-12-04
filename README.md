@@ -27,3 +27,5 @@ An Express.js-based back-end server for managing after-school classes and activi
 - Updated server.js to refactor code into modular functions
 # Commit 9 - Add search functionality for collections based on title and location
 - Updated server.js to implement search functionality for getting queried data. Can get title & location of the lessons for now.
+# Commit 10 - Fix update logic and add advanced search with aggregation for price and availability
+- Updated server.js to implement search function further. Pipeline is defined as it will handle non string (int, float, numner) type data: availability & price. Start by creating data attributes as string attributes, query find, and finaly remove newly created string attributes from the output. Aggregate the pipeline.

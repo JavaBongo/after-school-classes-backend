@@ -4,7 +4,6 @@ const app = express();
 const MongoClient = require('mongodb').MongoClient;
 const ObjectID = require('mongodb').ObjectID;
 var path = require("path");
-const { title } = require('process');
 
 function config(request, response, next) {
 	response.setHeader("Access-Control-Allow-Origin", "*");
@@ -49,7 +48,7 @@ function root(request, response) {
 function logger(request, response, next) {
     const method = request.method;
     const url = request.url;
-    const timestamp = new Date().toISOString();
+    const timestamp = new Date();
 
     console.log(`[${timestamp}] ${method} request to ${url}`); // Log request details
 
@@ -84,33 +83,72 @@ function getOneObject(request, response, next) {
 function addObject(request, response, next) {
     request.collection.insert(request.body, (e, results) => {
         if (e) return next(e)
-        response.send((result.result.n === 1) ? {msg: 'success'} : {msg: 'error'})
+        response.send((results.result.n === 1) ? {msg: 'success'} : {msg: 'error'})
     })
 }
 
 function updateObject(request, response, next) {
-    request.collection.update(
-        {_id: new ObjectID(request.params.id)},
-        {$set: request.body},
-        {safe: true, multi: false},
-        (e, result) => {
-            if (e) return next(e)
-            response.send((result.result.n === 1) ? {msg: 'success'} : {msg: 'error'})
-    })
+    const { ObjectID } = require('mongodb'); // Ensure ObjectID is required
+    const collectionName = request.params.collectionName;
+    const id = request.params.id;
+
+    try {
+        // Convert ⁠ id ⁠ to ObjectID
+        const query = { _id: new ObjectID(id) };
+        const update = { $set: request.body };
+
+        request.collection.updateOne(query, update, { safe: true, multi: false }, (error, result) => {
+            if (error) {
+                console.error('Update error:', error);
+                return next(error);
+            }
+
+            console.log('Update result:', result); // Log update result for debugging
+            if (result.matchedCount === 0) {
+                console.error('No document found with this ID:', id);
+            }
+
+            response.send((result.matchedCount === 1) ? { msg: 'success' } : { msg: 'error' });
+        });
+    } catch (error) {
+        console.error('Error in PUT route:', error);
+        next(error);
+    }
 }
 
 function searchObjects(request, response, next) {
     const searchTerm = request.query.q || ""; // Get the search term
     const searchRegex = new RegExp(searchTerm, "i"); // Case-insensitive regex for substring matching
 
-    const query = {
-        $or: [
-            { title: searchRegex },
-            { location: searchRegex },
-        ]
-    }
-    request.collection.find(query).toArray((err, results) => {
-        if (err) return next(err); // Handle errors
+    // Aggregation pipeline
+    const pipeline = [
+        {
+            $addFields: {
+                priceAsString: { $toString: "$price" },               // Convert price to string
+                availabilityAsString: { $toString: "$availability" } // Convert availability to string
+            }
+        },
+        {
+            $match: {
+                $or: [
+                    { title: searchRegex },             // Match title (string)
+                    { location: searchRegex },          // Match location (string)
+                    { priceAsString: searchRegex },     // Match price (as string)
+                    { availabilityAsString: searchRegex } // Match availability (as string)
+                ]
+            }
+        },
+        {
+            $project: {
+                priceAsString: 0,           // Exclude priceAsString from the output
+                availabilityAsString: 0     // Exclude availabilityAsString from the output
+            }
+        }
+    ];
+
+    // Execute the aggregation pipeline
+    request.collection.aggregate(pipeline).toArray((error, results) => {
+        if (error) return next(error); // Handle errors
         response.send(results);    // Send the filtered results
     });
 }
