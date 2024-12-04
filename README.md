@@ -23,3 +23,5 @@ An Express.js-based back-end server for managing after-school classes and activi
 - Modified .gitignore to ignore .DS_Store
 - Added Assets folder with 15 image items.
 - Updated server.js to implement static rendering of images in assets folder,
+# Commit 8 - Refactor server code into modular functions for routes and middleware
+- Updated server.js to refactor code into modular functions

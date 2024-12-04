@@ -1,13 +1,15 @@
 // Import dependencies
 const express = require('express');
+const app = express();
 const MongoClient = require('mongodb').MongoClient;
+const ObjectID = require('mongodb').ObjectID;
 var path = require("path");
 
-function config(req, res, next) {
-	res.setHeader("Access-Control-Allow-Origin", "*");
-	res.setHeader("Access-Control-Allow-Credentials", "true");
-	res.setHeader("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
-	res.setHeader(
+function config(request, response, next) {
+	response.setHeader("Access-Control-Allow-Origin", "*");
+	response.setHeader("Access-Control-Allow-Credentials", "true");
+	response.setHeader("Access-Control-Allow-Methods", "GET,HEAD,OPTIONS,POST,PUT");
+	response.setHeader(
 		"Access-Control-Allow-Headers",
 		"Access-Control-Allow-Headers, Origin,Accept, X-Requested-With, Content-Type, Access-Control-Request-Method, Access-Control-Request-Headers"
 	);
@@ -16,36 +18,8 @@ function config(req, res, next) {
 }
 
 // Create Express instance
-const app = express();
 app.use(express.json()); // Middleware to parse JSON
 app.use(config);
-
-// Logger Middleware
-function logger(req, res, next) {
-    const method = req.method;
-    const url = req.url;
-    const timestamp = new Date().toISOString();
-
-    // Log request details
-    console.log(`[${timestamp}] ${method} request to ${url}`);
-
-    // Capture and log response status when the response is finished
-    res.on('finish', () => {
-        console.log(`[${timestamp}] Response status: ${res.statusCode}`);
-    });
-
-    // Call next middleware
-    next();
-}
-
-// Use the logger middleware
-app.use(logger);
-
-var imagePath = path.resolve(__dirname, "assets");
-app.use('/assets', express.static(imagePath));
-app.get('/assets/:image', function(request, response, next) {
-    response.status(404).send('Image not found');
-});
 
 // MongoDB connection string and database setup
 let db;
@@ -60,60 +34,82 @@ MongoClient.connect(MongoURI, { useNewUrlParser: true, useUnifiedTopology: true 
     console.log('Connected to MongoDB');
 });
 
-// Basic route
-app.get('/', (req, res) => {
-    res.send('API is running! Try /collection/lessons');
-});
+// Image Assets folder path
+var imagePath = path.resolve(__dirname, "assets");
 
-// get the collection name
-app.param('collectionName', (req, res, next, collectionName) => {
-    req.collection = db.collection(collectionName)
-    console.log('collection name:', req.collection)
-    return next()
-})
+function staticImage(request, response) {
+    response.status(404).send('Image not found');
+}
 
-// Get all lessons from the "lessons" collection
-app.get('/collection/lessons', (req, res) => {
-    db.collection('lessons').find({}).toArray((e, lessons) => {
-        if (e) {
-            res.status(500).send(e);
-            return;
-        }
-        res.json(lessons);
+function root(request, response) {
+    response.send('API is running! Select a collection, e.g., Try /collection/lessons');
+}
+
+function logger(request, response, next) {
+    const method = request.method;
+    const url = request.url;
+    const timestamp = new Date().toISOString();
+
+    console.log(`[${timestamp}] ${method} request to ${url}`); // Log request details
+
+    // Capture and log response status when the response is finished
+    response.on('finish', () => {
+        console.log(`[${timestamp}] Response status: ${response.statusCode}`);
     });
-});
 
-// Post new order data into "orders" collection
-app.post('/collection/:collectionName', (req, res, next) => {
-    req.collection.insert(req.body, (e, results) => {
+    next();
+}
+
+function setCollectionName(request, response, next, collectionName) {
+    request.collection = db.collection(collectionName) // Sets the requested collection name
+    console.log('collection name:', request.collection)
+    return next()
+}
+
+function retrieveObjects(request, response, next) {
+    request.collection.find({}).toArray((e, results) => {
+		if (e) return next(e);
+		response.send(results);
+	});
+}
+
+function getOneObject(request, response, next) {
+    request.collection.findOne({ _id: new ObjectID(request.params.id) }, (e, result) => {
         if (e) return next(e)
-        res.send(results.ops)
+        response.send(result)
     })
-})
+}
 
-
-// return with object id 
-const ObjectID = require('mongodb').ObjectID;
-app.get('/collection/:collectionName/:id', (req, res, next) => {
-    req.collection.findOne({ _id: new ObjectID(req.params.id) }, (e, result) => {
+function addObject(request, response, next) {
+    request.collection.insert(request.body, (e, results) => {
         if (e) return next(e)
-        res.send(result)
+        response.send((result.result.n === 1) ? {msg: 'success'} : {msg: 'error'})
     })
-})
-    
-// Put update into specified lesson in "lessons" collection 
-app.put('/collection/:collectionName/:id', (req, res, next) => {
-    req.collection.update(
-    {_id: new ObjectID(req.params.id)},
-    {$set: req.body},
-    {safe: true, multi: false},
-    (e, result) => {
-    if (e) return next(e)
-    res.send((result.result.n === 1) ? {msg: 'success'} : {msg: 'error'})
+}
+
+function updateObject(request, response, next) {
+    request.collection.update(
+        {_id: new ObjectID(request.params.id)},
+        {$set: request.body},
+        {safe: true, multi: false},
+        (e, result) => {
+            if (e) return next(e)
+            response.send((result.result.n === 1) ? {msg: 'success'} : {msg: 'error'})
     })
-})
+}
+
+app.use(logger);
+app.get('/', root);
+app.use('/assets', express.static(imagePath));
+app.get('/assets/:image', staticImage);
+app.param("collectionName", setCollectionName);
+app.get('/collection/:collectionName', retrieveObjects);
+app.get('/collection/:collectionName/:id', getOneObject);
+app.post('/collection/:collectionName', addObject);
+app.put('/collection/:collectionName/:id', updateObject);
 
 // Start server
-app.listen(3000, () => {
-    console.log('Server running at http://localhost:3000');
+const port = process.env.PORT ||3000
+app.listen(port, () => {
+    console.log('Server running at http://localhost:' + port);
 });
