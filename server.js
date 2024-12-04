@@ -3,9 +3,15 @@ const express = require('express')
 
 const app = express()
 
-// Sends response if server is running due to basic route
+// Sends JSON response if server is running due to /status route
+app.get('/status', (req, res) => {
+    res.json({ status: 'Server is up and running!' });
+});
+app.use(express.json());
+
+// Basic route
 app.get('/', (req, res) => {
-    res.send('Server is working!');
+    res.send('API is running! Try /status');
 });
 
 // Starts the app on port 3000 and display a message when its started

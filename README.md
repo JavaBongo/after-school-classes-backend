@@ -9,3 +9,5 @@ An Express.js-based back-end server for managing after-school classes and activi
 - Added package.json with express dependency
 - Added server.js with basic express app setup
 - Added .gitignore for node_modules/
+# Commit 2 - Setup simple GET request
+- Modified server.js to implement simple get request and display information using .json format
