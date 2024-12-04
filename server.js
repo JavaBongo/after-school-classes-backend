@@ -4,6 +4,7 @@ const app = express();
 const MongoClient = require('mongodb').MongoClient;
 const ObjectID = require('mongodb').ObjectID;
 var path = require("path");
+const { title } = require('process');
 
 function config(request, response, next) {
 	response.setHeader("Access-Control-Allow-Origin", "*");
@@ -98,6 +99,22 @@ function updateObject(request, response, next) {
     })
 }
 
+function searchObjects(request, response, next) {
+    const searchTerm = request.query.q || ""; // Get the search term
+    const searchRegex = new RegExp(searchTerm, "i"); // Case-insensitive regex for substring matching
+
+    const query = {
+        $or: [
+            { title: searchRegex },
+            { location: searchRegex },
+        ]
+    }
+    request.collection.find(query).toArray((err, results) => {
+        if (err) return next(err); // Handle errors
+        response.send(results);    // Send the filtered results
+    });
+}
+
 app.use(logger);
 app.get('/', root);
 app.use('/assets', express.static(imagePath));
@@ -107,6 +124,7 @@ app.get('/collection/:collectionName', retrieveObjects);
 app.get('/collection/:collectionName/:id', getOneObject);
 app.post('/collection/:collectionName', addObject);
 app.put('/collection/:collectionName/:id', updateObject);
+app.get('/search/:collectionName', searchObjects);
 
 // Start server
 const port = process.env.PORT ||3000

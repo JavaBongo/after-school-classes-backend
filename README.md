@@ -25,3 +25,5 @@ An Express.js-based back-end server for managing after-school classes and activi
 - Updated server.js to implement static rendering of images in assets folder,
 # Commit 8 - Refactor server code into modular functions for routes and middleware
 - Updated server.js to refactor code into modular functions
+# Commit 9 - Add search functionality for collections based on title and location
+- Updated server.js to implement search functionality for getting queried data. Can get title & location of the lessons for now.
