@@ -1,20 +1,33 @@
-// Import dependencies modules:
-const express = require('express')
+// Import dependencies
+const express = require('express');
+const MongoClient = require('mongodb').MongoClient;
 
-const app = express()
+// Create Express instance
+const app = express();
+app.use(express.json()); // Middleware to parse JSON
 
-// Sends JSON response if server is running due to /status route
-app.get('/status', (req, res) => {
-    res.json({ status: 'Server is up and running!' });
-});
-app.use(express.json());
+// Logger Middleware
+function logger(req, res, next) {
+    const method = req.method;
+    const url = req.url;
+    const timestamp = new Date().toISOString();
 
-// Basic route
-app.get('/', (req, res) => {
-    res.send('API is running! Try /status');
-});
+    // Log request details
+    console.log(`[${timestamp}] ${method} request to ${url}`);
 
-// Starts the app on port 3000 and display a message when its started
-app.listen(3000, function() {
-    console.log("App started on port http://localhost:3000");
+    // Capture and log response status when the response is finished
+    res.on('finish', () => {
+        console.log(`[${timestamp}] Response status: ${res.statusCode}`);
+    });
+
+    // Call next middleware
+    next();
+}
+
+// Use the logger middleware
+app.use(logger);
+
+// Start server
+app.listen(3000, () => {
+    console.log('Server running at http://localhost:3000');
 });

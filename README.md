@@ -11,3 +11,5 @@ An Express.js-based back-end server for managing after-school classes and activi
 - Added .gitignore for node_modules/
 # Commit 2 - Setup simple GET request
 - Modified server.js to implement simple get request and display information using .json format
+# Commit 3 - Logger Middleware implemented
+- Modified server.js to implement logger middleware. Type of requests & response status will be displayed in the server console.
