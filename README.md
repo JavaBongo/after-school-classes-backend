@@ -3,8 +3,10 @@ An Express.js-based back-end server for managing after-school classes and activi
 # Links
 - FrontEnd Repo: https://github.com/JavaBongo/after-school-classes-vue
 - BackEnd Repo: https://github.com/JavaBongo/after-school-classes-backend
-- Render Service: 
+- Render Service: https://after-school-classes-backend-nvk9.onrender.com
 - Github Pages: https://javabongo.github.io/after-school-classes-vue/
+- FrontEnd Commits: https://github.com/JavaBongo/after-school-classes-vue/commits/main/
+- BackEnd Commits: https://github.com/JavaBongo/after-school-classes-backend/commits/main/
 # Commit 1 - Initialize Express basic app
 - Added package.json with express dependency.
 - Added server.js with basic express app setup.
